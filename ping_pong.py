@@ -1,6 +1,12 @@
 from pygame import *
 '''Необходимые классы'''
-
+#TODO score counter
+#TODO time limit + counter
+#TODO win condition
+'''A game shall be won by the player first scoring 11 points unless both players score 10 points, 
+when the game shall be won by the first player subsequently gaining a lead of 2 points. 
+A match shall consist of the best of any odd number of games.
+In competition play, matches are typically best of five or seven games.'''
 
 #класс-родитель для спрайтов
 class GameSprite(sprite.Sprite):
@@ -30,27 +36,6 @@ class Player(GameSprite):
             self.rect.y -= self.speed
         if keys[K_s] and self.rect.bottom < win_height:
             self.rect.y += self.speed
-
-    def hit(self, pong):
-        if sprite.collide_rect(self, pong):
-            angle = section(self, pong)
-            #print(angle)
-            if angle == 20:
-                pong.speed_y = 1
-            elif angle == 40:
-                pong.speed_y = 3
-            elif angle == -20:
-                pong.speed_y = -1
-            elif angle == -40:
-                pong.speed_y = -3
-            elif angle == 0:
-                pong.speed_y = 0
-
-            #!Делаем нужное направление от(!) ракетки
-            if self.rect.x > win_width/2:
-                pong.speed_x = abs(pong.speed_x) * -1
-            else:
-                pong.speed_x = abs(pong.speed_x)
             
 
 
@@ -64,6 +49,30 @@ class Ball(GameSprite):
     def update(self):
         self.rect.x += self.speed_x
         self.rect.y += self.speed_y
+    
+    def hit(self, paddle):
+        if sprite.collide_rect(paddle, self):
+            angle = section(paddle, self)
+            #print(angle)
+            if abs(angle) == 20:
+                self.speed_y = 1
+                self.speed_x = 3
+            elif abs(angle) == 40:
+                self.speed_y = 3
+                self.speed_x = 3
+            elif abs(angle) == 0:
+                self.speed_y = 0
+                self.speed_x = 4
+
+            if angle < 0:
+                self.speed_y *= -1
+
+
+            #!Делаем нужное направление от(!) ракетки
+            if self.rect.x > win_width/2:
+                self.speed_x = abs(self.speed_x) * -1
+            else:
+                self.speed_x = abs(self.speed_x)
 
 
 #! В какую часть ракетки попал мяч? Считаем угол отскока
@@ -118,10 +127,8 @@ while game:
         racket1.update_l()
         racket2.update_r()
         ball.update()
-
-
-        racket1.hit(ball)
-        racket2.hit(ball)
+        ball.hit(racket1)
+        ball.hit(racket2)
       
         #если мяч достигает границ экрана, меняем направление его движения
         if ball.rect.y > win_height-50 or ball.rect.y < 0:
